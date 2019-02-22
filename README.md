@@ -13,3 +13,6 @@ Prerequesites:
 - PHD2 Guiding must be running
 - Camera and mount must be connected
 - PHD2 Server must be running (check option "Tools" menu of PHD2 Guiding)
+
+A Microsoft Windows binary executable file of PHD2 Calibrate can be downloaded in the [Releases Section](https://github.com/ngaertner/phd2calibrate/releases).
+You can also build your own binary using the latest source for your OS with [golang](https://golang.org).
