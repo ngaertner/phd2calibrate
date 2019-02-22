@@ -1,4 +1,4 @@
-# phd2calibrate
+# PHD2 Calibrate
 PHD2 Calibrate is used to start the calibration process of PHD2 Guiding via a simple command line executable.
 This allows to trigger a calibration within scripts or imaging plans (e.g. the imaging plans provided by APT - Astro Photo Tools).
 
