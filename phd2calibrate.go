@@ -48,6 +48,11 @@ type Event struct {
 	Event string
 }
 
+type ResponseBool struct {
+	Result bool
+	Id     int
+}
+
 var timeoutLimit int64 = 300
 
 func waitForCalibrateStart(conn io.Reader, ccalstart chan string) {
@@ -80,6 +85,19 @@ func waitForCalibrateEnd(conn io.Reader, ccalresult chan string) {
 	}
 }
 
+func waitForBoolResponse(conn io.Reader, id int, cresponse chan string) {
+	var response ResponseBool
+	scanner := bufio.NewScanner(conn)
+	for {
+		scanner.Scan()
+		json.Unmarshal([]byte(scanner.Text()), &response)
+		if response.Id == id {
+			cresponse <- strconv.FormatBool(response.Result)
+			break
+		}
+	}
+}
+
 func main() {
 
 	flag.Int64Var(&timeoutLimit, "t", 300, "Timeout Limit (seconds)")
@@ -103,6 +121,27 @@ func main() {
 		time.Sleep(1 * time.Second)
 		os.Exit(0)
 	}()
+
+	fmt.Fprintf(conn, "{\"method\": \"get_connected\",\"id\":1}\n")
+	cresult_connected := make(chan string)
+
+	go waitForBoolResponse(conn, 1, cresult_connected)
+
+	select {
+	case result := <-cresult_connected:
+		switch result {
+		case "false":
+			println("Error - No equipment connected")
+			os.Exit(1)
+		case "true":
+			println("Info - Equipment connected")
+		}
+	case <-time.After(time.Duration(timeoutLimit) * time.Second):
+		println("Timeout - Calibration did not start after " + strconv.FormatInt(timeoutLimit, 10) + " seconds - stopping")
+		fmt.Fprintf(conn, "{\"method\": \"stop_capture\"}\n")
+		time.Sleep(1 * time.Second)
+		os.Exit(1)
+	}
 
 	println("Preparation - Stopping capture and resetting calibration")
 
